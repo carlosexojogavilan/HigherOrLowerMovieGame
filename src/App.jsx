@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import LeftMovieCard from "./components/LeftMovieCard";
+import RightMovieCard from "./components/RightMovieCard";
+import PointsCounter from "./components/PointsCounter";
+import GameOverCard from "./components/GameOverCard";
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -18,9 +22,9 @@ function App() {
     };
 
     try {
+      console.log("Hola");
       const response = await fetch(url, options);
       const result = await response.json();
-      console.log(result.results);
       setMovies(result.results);
       setLeftMovie(result.results[0]);
       setRightMovie(result.results[1]);
@@ -51,6 +55,7 @@ function App() {
         playerResponse === "after")
     ) {
       console.log("Game over");
+      setGameStatus({ ...gameStatus, gameOver: true });
     } else {
       if (movies.length >= 2) {
         const newMovies = movies.slice(1);
@@ -62,72 +67,32 @@ function App() {
     }
   };
 
+  const retryGame = () => {
+    setGameStatus({ points: 0, gameOver: false });
+    getMovies();
+  };
+
   useEffect(() => {
     getMovies();
   }, []);
 
   return (
-    <>
-      <div className="min-h-screen flex bg-black">
-        {movies.length > 0 && (
-          <>
-            <div
-              className={`w-[50%] h-screen overflow-hidden relative bg-cover bg-center bg-no-repeat bg-opacity-50 relative`}
-              style={{
-                backgroundImage: `url('${leftMovie.primaryImage.url}')`,
-              }}
-            >
-              <div className="h-full w-full bg-black bg-opacity-60 flex flex-col justify-center items-center">
-                <h1 className="text-4xl font-bold text-white text-center">
-                  {leftMovie.titleText.text}
-                </h1>
-                <h3 className="text-2xl font-bold text-white">
-                  was released in
-                </h3>
-                <p className="text-4xl font-bold text-yellow-500">
-                  {leftMovie.releaseDate.day}/{leftMovie.releaseDate.month}/
-                  {leftMovie.releaseDate.year}
-                </p>
-              </div>
-              <p className="text-yellow-500 text-4xl font-semibold absolute bottom-5 left-5">
-                Points: {gameStatus.points}
-              </p>
-            </div>
-            <div className="w-1 bg-slate-400 h-screen"></div>
-            <div
-              className={`w-[50%] h-screen overflow-hidden relative bg-cover bg-center bg-no-repeat bg-opacity-50`}
-              style={{
-                backgroundImage: `url('${rightMovie.primaryImage.url}')`,
-              }}
-            >
-              <div className="h-full w-full bg-black bg-opacity-60 flex flex-col justify-center items-center">
-                <h1 className="text-4xl font-bold text-white text-center">
-                  {rightMovie.titleText.text}
-                </h1>
-                <h3 className="text-2xl font-bold text-white">was released</h3>
-                <div className="flex flex-col gap-4 mt-4 items-center">
-                  <button
-                    onClick={() => nextMovie("after")}
-                    className="text-white bg-green-500 px-4 py-2 rounded-md font-semibold"
-                  >
-                    After
-                  </button>
-                  <button
-                    onClick={() => nextMovie("before")}
-                    className="text-white bg-red-500 px-4 py-2 rounded-md font-semibold"
-                  >
-                    Before
-                  </button>
-                  <h3 className="text-2xl font-bold text-white">
-                    {leftMovie.titleText.text}
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </>
+    <div className="relative min-h-screen flex justify-center items-center bg-black">
+      {movies.length > 0 && !gameStatus.gameOver ? (
+        <>
+          <LeftMovieCard leftMovie={leftMovie}></LeftMovieCard>
+          <div className="w-[1px] bg-slate-400 h-screen"></div>
+          <RightMovieCard
+            leftMovieName={leftMovie.titleText.text}
+            rightMovie={rightMovie}
+            nextMovie={nextMovie}
+          ></RightMovieCard>
+          <PointsCounter points={gameStatus.points}></PointsCounter>
+        </>
+      ) : (
+        <GameOverCard retryGame={retryGame}></GameOverCard>
+      )}
+    </div>
   );
 }
 
