@@ -1,7 +1,7 @@
 const LeftMovieCard = ({ leftMovie }) => {
   return (
     <div
-      className="relative w-[50%] h-screen overflow-hidden bg-cover bg-center bg-no-repeat bg-opacity-50"
+      className="relative w-[50%] h-screen overflow-hidden bg-cover bg-center bg-no-repeat bg-opacity-50 transition-all ease-linear duration-700"
       style={{
         backgroundImage: `url('${leftMovie.primaryImage.url}')`,
       }}
