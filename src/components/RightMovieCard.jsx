@@ -5,7 +5,7 @@ const RightMovieCard = ({ leftMovieName, rightMovie, nextMovie }) => {
 
   return (
     <div
-      className={`w-[50%] h-screen overflow-hidden bg-cover bg-center bg-no-repeat bg-opacity-50 transition-all ease-linear duration-700`}
+      className={`w-full md:w-[50%] h-screen overflow-hidden bg-cover bg-center bg-no-repeat bg-opacity-50 transition-all ease-linear duration-700`}
       style={{
         backgroundImage: `url('${rightMovie.primaryImage.url}')`,
       }}

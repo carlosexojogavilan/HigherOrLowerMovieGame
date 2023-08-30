@@ -93,12 +93,12 @@ function App() {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex justify-center items-center bg-black">
+    <div className="relative h-screen md:min-h-screen flex flex-col md:flex-row justify-center items-center bg-black">
       {/* <BackgroundMusic /> */}
       {movies.length > 0 && !gameStatus.gameOver ? (
         <>
           <LeftMovieCard leftMovie={leftMovie}></LeftMovieCard>
-          <div className="w-[1px] bg-slate-400 h-screen"></div>
+          <div className="w-full md:w-[1px] bg-slate-400 h-[1px] md:h-screen"></div>
           <div className="p-8 rounded-full bg-white text-3xl absolute z-10 font-semibold border-[1px] border-slate-400">
             VS
           </div>
@@ -120,3 +120,7 @@ function App() {
 }
 
 export default App;
+
+//contenedor-principal: flex-col md:flex-row y pasar de min-h-screen a h-screen
+//contenedor de tarjetas: quitar el 50% y meter el full
+//separador darle 1 de altura y width full
