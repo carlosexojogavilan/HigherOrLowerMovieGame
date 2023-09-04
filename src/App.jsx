@@ -1,110 +1,77 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LeftMovieCard from "./components/LeftMovieCard";
 import RightMovieCard from "./components/RightMovieCard";
 import PointsCounter from "./components/PointsCounter";
 import GameOverCard from "./components/GameOverCard";
-import BackgroundMusic from "./components/BackgroundMusic";
 import rightOptionSound from "./assets/interface-124464.mp3";
 import wrongOptionSound from "./assets/wrong-answer-126515.mp3";
+import useMovies from "./hook/useMovies";
 
 function App() {
-  const [movies, setMovies] = useState([]);
-  const [leftMovie, setLeftMovie] = useState({});
-  const [rightMovie, setRightMovie] = useState({});
+  const { movies, setMovies, reGetMovies } = useMovies();
   const [gameStatus, setGameStatus] = useState({ points: 0, gameOver: false });
 
   const playSound = (sound) => {
     new Audio(sound).play();
   };
 
-  const getMovies = async () => {
-    const url =
-      "https://moviesdatabase.p.rapidapi.com/titles/random?startYear=2010&genre=Drama&limit=10&endYear=2020&list=most_pop_movies";
-    const options = {
-      method: "GET",
-      headers: {
-        "X-RapidAPI-Key": "eb7c0709f9msh33677a073a625a7p11871ajsn4f082da779e6",
-        "X-RapidAPI-Host": "moviesdatabase.p.rapidapi.com",
-      },
-    };
+  const checkPlayerResponse = (leftMovie, rightMovie, playerResponse) => {
+    const leftDate = new Date(
+      leftMovie.releaseDate.year,
+      leftMovie.releaseDate.month,
+      leftMovie.releaseDate.day
+    );
+    const rightDate = new Date(
+      rightMovie.releaseDate.year,
+      rightMovie.releaseDate.month,
+      rightMovie.releaseDate.day
+    );
 
-    try {
-      console.log("Hola");
-      const response = await fetch(url, options);
-      const result = await response.json();
-      setMovies(result.results);
-      if (rightMovie?.releaseDate?.year) {
-        setLeftMovie(rightMovie);
-        setRightMovie(result.results[0]);
-      } else {
-        setLeftMovie(result.results[0]);
-        setRightMovie(result.results[1]);
-      }
-    } catch (error) {
-      console.error(error);
-    }
+    if (playerResponse === "before" && leftDate > rightDate) return true;
+    if (playerResponse === "after" && leftDate < rightDate) return true;
+    return false;
   };
 
   const nextMovie = (playerResponse) => {
-    if (
-      (leftMovie.releaseDate.year < rightMovie.releaseDate.year &&
-        playerResponse === "before") ||
-      (leftMovie.releaseDate.year === rightMovie.releaseDate.year &&
-        leftMovie.releaseDate.month < rightMovie.releaseDate.month &&
-        playerResponse === "before") ||
-      (leftMovie.releaseDate.year === rightMovie.releaseDate.year &&
-        leftMovie.releaseDate.month === rightMovie.releaseDate.month &&
-        leftMovie.releaseDate.day < rightMovie.releaseDate.month &&
-        playerResponse === "before") ||
-      (leftMovie.releaseYear.year > rightMovie.releaseYear.year &&
-        playerResponse === "after") ||
-      (leftMovie.releaseDate.year === rightMovie.releaseDate.year &&
-        leftMovie.releaseDate.month > rightMovie.releaseDate.month &&
-        playerResponse === "after") ||
-      (leftMovie.releaseDate.year === rightMovie.releaseDate.year &&
-        leftMovie.releaseDate.month === rightMovie.releaseDate.month &&
-        leftMovie.releaseDate.day > rightMovie.releaseDate.month &&
-        playerResponse === "after")
-    ) {
-      playSound(wrongOptionSound);
-      console.log("Game over");
-      setGameStatus({ ...gameStatus, gameOver: true });
-    } else {
+    const isCorrectResponse = checkPlayerResponse(
+      movies[0],
+      movies[1],
+      playerResponse
+    );
+
+    if (isCorrectResponse) {
       playSound(rightOptionSound);
       setGameStatus({ ...gameStatus, points: gameStatus.points + 1 });
-      if (movies.length > 2) {
-        const newMovies = movies.slice(1);
-        setMovies(newMovies);
-        setLeftMovie(rightMovie);
-        setRightMovie(newMovies[1]);
-      } else {
-        getMovies();
-      }
+
+      const newMovies = movies.slice(1);
+      if (newMovies.length <= 2) {
+        reGetMovies();
+      } else setMovies(newMovies);
+      console.log(newMovies, "final ronda");
+    } else {
+      playSound(wrongOptionSound);
+      setGameStatus({ ...gameStatus, gameOver: true });
     }
   };
 
   const retryGame = () => {
     setGameStatus({ points: 0, gameOver: false });
-    getMovies();
+    if (movies.length > 2) setMovies(() => movies.slice(1));
+    else reGetMovies();
   };
-
-  useEffect(() => {
-    getMovies();
-  }, []);
 
   return (
     <div className="relative h-screen md:min-h-screen flex flex-col md:flex-row justify-center items-center bg-black">
-      {/* <BackgroundMusic /> */}
       {movies.length > 0 && !gameStatus.gameOver ? (
         <>
-          <LeftMovieCard leftMovie={leftMovie}></LeftMovieCard>
+          <LeftMovieCard leftMovie={movies[0]}></LeftMovieCard>
           <div className="w-full md:w-[1px] bg-slate-400 h-[1px] md:h-screen"></div>
           <div className="p-8 rounded-full bg-white text-3xl absolute z-10 font-semibold border-[1px] border-slate-400">
             VS
           </div>
           <RightMovieCard
-            leftMovieName={leftMovie?.titleText.text}
-            rightMovie={rightMovie}
+            leftMovieName={movies[0]?.titleText.text}
+            rightMovie={movies[1]}
             nextMovie={nextMovie}
           ></RightMovieCard>
           <PointsCounter points={gameStatus.points}></PointsCounter>
@@ -120,7 +87,3 @@ function App() {
 }
 
 export default App;
-
-//contenedor-principal: flex-col md:flex-row y pasar de min-h-screen a h-screen
-//contenedor de tarjetas: quitar el 50% y meter el full
-//separador darle 1 de altura y width full
