@@ -82,6 +82,9 @@ function App() {
           finalPoints={gameStatus.points}
         ></GameOverCard>
       )}
+      <div className="text-yellow-500 text-2xl font-semibold absolute bottom-5 right-5">
+        Made by Carlos Exojo
+      </div>
     </div>
   );
 }
